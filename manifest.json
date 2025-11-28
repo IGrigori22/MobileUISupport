@@ -1,0 +1,15 @@
+{
+  "Name": "Mobile UI Support",
+  "Author": "Grigori22",
+  "Version": "1.0.0",
+  "Description": "Making UI Mod easier to run on Android",
+  "UniqueID": "Grigori22.MobileUISupport",
+  "EntryDll": "MobileUISupport.dll",
+  "MinimumApiVersion": "4.0.0",
+  "Dependencies": [
+        {
+            "UniqueID": "Zexu2K.MagicStardew.C",
+            "IsRequired": true
+        }
+    ],
+}
