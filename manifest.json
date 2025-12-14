@@ -9,7 +9,19 @@
   "Dependencies": [
         {
             "UniqueID": "Zexu2K.MagicStardew.C",
-            "IsRequired": true
+            "IsRequired": false
+        },
+        {
+            "UniqueID": "IGrigori22.AddonsMobile",
+            "IsRequired": false
+        },
+        {
+            "UniqueID": "ThaliaFawnheart.TheStardewSquad",
+            "IsRequired": false
+        },
+        {
+            "UniqueID": "spacechase0.GenericModConfigMenu",
+            "IsRequired": false
         }
     ],
 }
