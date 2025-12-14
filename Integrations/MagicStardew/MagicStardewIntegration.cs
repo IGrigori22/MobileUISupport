@@ -158,6 +158,7 @@ namespace MobileUISupport.Integrations.MagicStardew
             if (_spellMenuIcon != null)
             {
                 // Icon pertama dari spritesheet, 16x16
+                builder.WithIcon(_spellMenuIcon, new Rectangle(0, 0, 16, 16));
             }
 
             // Tint color ungu untuk magic theme
