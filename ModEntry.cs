@@ -1,76 +1,63 @@
-﻿using MobileUISupport;
+﻿using MobileUISupport.Events;
 using MobileUISupport.Framework;
-using MobileUISupport.Patches;
+using MobileUISupport.Integrations;
 using StardewModdingAPI;
-using StardewModdingAPI.Events;
 
 namespace MobileUISupport
 {
+    /// <summary>
+    /// Main entry point untuk Mobile UI Support mod.
+    /// Bertanggung jawab hanya untuk wiring dan initialization.
+    /// </summary>
     public class ModEntry : Mod
     {
-        private ModConfig Config = null!;
-        private MagicStardewAPI? API;
-        private SpellMenuInterceptor? Interceptor;
+        // ═══════════════════════════════════════════════════════
+        // Fields
+        // ═══════════════════════════════════════════════════════
+
+        private IntegrationManager _integrations = null!;
+        private GameLifecycleHandler _lifecycleHandler = null!;
+        private InputHandler _inputHandler = null!;
+        private RenderHandler _renderHandler = null!;
+
+        // ═══════════════════════════════════════════════════════
+        // Entry Point
+        // ═══════════════════════════════════════════════════════
 
         public override void Entry(IModHelper helper)
         {
-            Config = helper.ReadConfig<ModConfig>();
+            // Phase 1: Initialize core services
+            ModServices.Initialize(helper, Monitor, ModManifest);
 
-            Monitor.Log("╔═══════════════════════════════════════════╗", LogLevel.Info);
-            Monitor.Log("║      Magic Mobile UI - Starting...        ║", LogLevel.Info);
-            Monitor.Log("║      Event-based Menu Replacement         ║", LogLevel.Info);
-            Monitor.Log("╚═══════════════════════════════════════════╝", LogLevel.Info);
+            // Phase 2: Log startup
+            Logger.Banner("Starting...");
 
-            helper.Events.GameLoop.GameLaunched += OnGameLaunched;
-            helper.Events.GameLoop.SaveLoaded += OnSaveLoaded;
+            // Phase 3: Create managers
+            InitializeManagers();
+
+            // Phase 4: Register event handlers
+            RegisterEventHandlers();
+
+            Logger.Debug("Initialization complete");
         }
 
-        private void OnGameLaunched(object? sender, GameLaunchedEventArgs e)
+        // ═══════════════════════════════════════════════════════
+        // Initialization
+        // ═══════════════════════════════════════════════════════
+
+        private void InitializeManagers()
         {
-            // Check for Magic Stardew
-            if (!Helper.ModRegistry.IsLoaded("Zexu2K.MagicStardew.C"))
-            {
-                Monitor.Log("╔═══════════════════════════════════════════╗", LogLevel.Error);
-                Monitor.Log("║  ERROR: Magic Stardew not found!          ║", LogLevel.Error);
-                Monitor.Log("║  Please install Zexu2K.MagicStardew.C     ║", LogLevel.Error);
-                Monitor.Log("╚═══════════════════════════════════════════╝", LogLevel.Error);
-                return;
-            }
-
-            Monitor.Log("Magic Stardew detected ✓", LogLevel.Info);
-
-            // Initialize API
-            API = new MagicStardewAPI(Monitor, Helper);
-
-            // Create interceptor (uses SMAPI events, not Harmony)
-            Interceptor = new SpellMenuInterceptor(Monitor, Helper, Config, API);
-
-            if (Interceptor.Setup())
-            {
-                Monitor.Log("╔═══════════════════════════════════════════╗", LogLevel.Info);
-                Monitor.Log("║      Magic Mobile UI - Ready! ✓           ║", LogLevel.Info);
-                Monitor.Log("║      SpellMenu will be replaced           ║", LogLevel.Info);
-                Monitor.Log("╚═══════════════════════════════════════════╝", LogLevel.Info);
-            }
-            else
-            {
-                Monitor.Log("Failed to setup menu interceptor!", LogLevel.Error);
-            }
+            _integrations = new IntegrationManager();
+            _lifecycleHandler = new GameLifecycleHandler(_integrations);
+            _inputHandler = new InputHandler(_integrations);
+            _renderHandler = new RenderHandler(_integrations);
         }
 
-        private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
+        private void RegisterEventHandlers()
         {
-            // Initialize API after game is fully loaded
-            if (API != null)
-            {
-                bool initialized = API.Initialize();
-                Monitor.Log($"MagicStardew API initialized: {initialized}", LogLevel.Debug);
-            }
-
-            if (Config.DebugMode)
-            {
-                Monitor.Log($"Screen: {StardewValley.Game1.uiViewport.Width}x{StardewValley.Game1.uiViewport.Height}", LogLevel.Debug);
-            }
+            _lifecycleHandler.Register();
+            _inputHandler.Register();
+            _renderHandler.Register();
         }
     }
 }

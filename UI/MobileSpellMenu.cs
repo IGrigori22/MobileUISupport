@@ -14,27 +14,37 @@ namespace MobileUISupport.UI
     /// </summary>
     public class MobileSpellMenu : IClickableMenu
     {
-        // Dependencies
+        /*********
+        ** Dependencies
+        *********/
         private readonly IModHelper _helper;
         private readonly IMonitor _monitor;
         private readonly ModConfig _config;
         private readonly MagicStardewAPI _api;
 
-        // Data
+        /*********
+        ** Spell Data
+        *********/
         private readonly List<SpellData> _spells;
         private readonly Farmer _player;
         private readonly object _manaBar;
         private readonly Dictionary<int, SpellData> _favorites;
 
-        // UI State
+        /*********
+        ** UI State
+        *********/
         private int _selectedIndex = 0;
         private int _currentPage = 0;
         private int _spellsPerPage;
         private int _totalPages;
         private float _pulseTimer = 0f;
         private string _hoverText = "";
+        private bool _isConfirmingCast = false;
+        private SpellData? _pendingSpell = null;
 
-        // UI Components
+        /*********
+        ** UI Components
+        *********/
         private List<ClickableComponent> _spellSlots = new();
         private ClickableTextureComponent? _prevPageButton;
         private ClickableTextureComponent? _nextPageButton;
@@ -42,16 +52,37 @@ namespace MobileUISupport.UI
         private ClickableComponent? _castButton;
         private List<ClickableComponent> _favoriteSlots = new();
 
-        // Layout constants
-        private const int ICON_SIZE = 64;
-        private const int ICON_SPACING = 12;
-        private const int GRID_COLUMNS = 5;
-        private const int GRID_ROWS = 4;
+        // Confirmation dialog buttons
+        private ClickableComponent? _confirmYesButton;
+        private ClickableComponent? _confirmNoButton;
 
-        // Calculated areas
+        /*********
+        ** Layout (from config)
+        *********/
+        private int IconSize => _config.SpellIconSize;
+        private int IconSpacing => _config.IconSpacing;
+        private int GridColumns => _config.GridColumns;
+        private int GridRows => _config.GridRows;
+        private int MenuPadding => _config.MenuPadding;
+
+        /*********
+        ** Calculated Areas
+        *********/
         private Rectangle _gridArea;
         private Rectangle _infoPanel;
+        private Rectangle _confirmDialog;
 
+        /*********
+        ** Theme Colors
+        *********/
+        private Color _titleColor;
+        private Color _textColor;
+        private Color _accentColor;
+        private Color _highlightColor;
+
+        /*********
+        ** Constructor
+        *********/
         public MobileSpellMenu(
             List<SpellData> spells,
             Farmer player,
@@ -72,51 +103,113 @@ namespace MobileUISupport.UI
             _config = config;
             _api = api;
 
-            _spellsPerPage = GRID_COLUMNS * GRID_ROWS;
+            // Calculate pagination
+            _spellsPerPage = GridColumns * GridRows;
             _totalPages = Math.Max(1, (int)Math.Ceiling((double)_spells.Count / _spellsPerPage));
 
+            // Setup theme colors
+            ApplyTheme(_config.ThemeColor);
+
+            // Calculate layout and create components
             CalculateLayout();
             CreateUIComponents();
 
-            // Play sound saat menu dibuka
-            if (Game1.soundBank != null)
+            // Play open sound
+            PlaySound("bigSelect");
+        }
+
+        /*********
+        ** Theme System
+        *********/
+
+        /// <summary>
+        /// Apply color theme based on config
+        /// </summary>
+        private void ApplyTheme(string themeName)
+        {
+            switch (themeName.ToLower())
             {
-                try { Game1.playSound("bigSelect"); } catch { }
+                case "dark":
+                    _titleColor = new Color(200, 200, 200);
+                    _textColor = new Color(220, 220, 220);
+                    _accentColor = new Color(100, 100, 120);
+                    _highlightColor = new Color(150, 150, 200);
+                    break;
+
+                case "light":
+                    _titleColor = new Color(60, 40, 30);
+                    _textColor = new Color(50, 50, 50);
+                    _accentColor = new Color(200, 180, 150);
+                    _highlightColor = new Color(255, 220, 150);
+                    break;
+
+                case "blue":
+                    _titleColor = new Color(100, 150, 220);
+                    _textColor = Color.White;
+                    _accentColor = new Color(70, 100, 150);
+                    _highlightColor = new Color(100, 180, 255);
+                    break;
+
+                case "green":
+                    _titleColor = new Color(100, 180, 100);
+                    _textColor = Color.White;
+                    _accentColor = new Color(60, 120, 60);
+                    _highlightColor = new Color(120, 220, 120);
+                    break;
+
+                case "purple":
+                    _titleColor = new Color(180, 100, 220);
+                    _textColor = Color.White;
+                    _accentColor = new Color(100, 60, 130);
+                    _highlightColor = new Color(200, 150, 255);
+                    break;
+
+                case "default":
+                default:
+                    _titleColor = new Color(86, 22, 12); // Dark brown
+                    _textColor = Color.White;
+                    _accentColor = new Color(180, 100, 50);
+                    _highlightColor = Color.Gold;
+                    break;
             }
         }
+
+        /*********
+        ** Layout Calculation
+        *********/
 
         private void CalculateLayout()
         {
             int viewportWidth = Game1.uiViewport.Width;
             int viewportHeight = Game1.uiViewport.Height;
 
-            // Hitung ukuran grid
-            int gridWidth = (ICON_SIZE * GRID_COLUMNS) + (ICON_SPACING * (GRID_COLUMNS - 1));
-            int gridHeight = (ICON_SIZE * GRID_ROWS) + (ICON_SPACING * (GRID_ROWS - 1));
+            // Calculate grid size based on config
+            int gridWidth = (IconSize * GridColumns) + (IconSpacing * (GridColumns - 1));
+            int gridHeight = (IconSize * GridRows) + (IconSpacing * (GridRows - 1));
 
-            // Panel info di sebelah kanan
-            int panelWidth = 250;
+            // Panel info width
+            int panelWidth = Math.Max(200, (int)(viewportWidth * 0.25f));
+            panelWidth = Math.Min(panelWidth, 280);
 
-            // Total ukuran menu
-            int totalWidth = gridWidth + panelWidth + 100; // padding
+            // Total menu size
+            int totalWidth = gridWidth + panelWidth + MenuPadding * 3 + 20;
             int totalHeight = gridHeight + 140; // header + footer
 
-            // Clamp ke ukuran layar
+            // Clamp to viewport
             totalWidth = Math.Min(totalWidth, viewportWidth - 40);
             totalHeight = Math.Min(totalHeight, viewportHeight - 40);
 
-            // Set bounds
+            // Set menu bounds
             width = totalWidth;
             height = totalHeight;
             xPositionOnScreen = (viewportWidth - width) / 2;
             yPositionOnScreen = Math.Max(20, (viewportHeight - height) / 2);
 
             // Calculate sub-areas
-            int padding = 24;
             int headerHeight = 60;
 
             _gridArea = new Rectangle(
-                xPositionOnScreen + padding,
+                xPositionOnScreen + MenuPadding,
                 yPositionOnScreen + headerHeight,
                 gridWidth + 24,
                 gridHeight + 24
@@ -125,11 +218,24 @@ namespace MobileUISupport.UI
             _infoPanel = new Rectangle(
                 _gridArea.Right + 16,
                 yPositionOnScreen + headerHeight,
-                width - _gridArea.Width - padding * 2 - 16,
+                width - _gridArea.Width - MenuPadding * 2 - 16,
                 gridHeight + 24
             );
 
-            _monitor.Log($"Menu layout: {width}x{height} at ({xPositionOnScreen}, {yPositionOnScreen})", LogLevel.Debug);
+            // Confirmation dialog (centered on screen)
+            int dialogWidth = 350;
+            int dialogHeight = 180;
+            _confirmDialog = new Rectangle(
+                (viewportWidth - dialogWidth) / 2,
+                (viewportHeight - dialogHeight) / 2,
+                dialogWidth,
+                dialogHeight
+            );
+
+            if (_config.DebugMode)
+            {
+                _monitor.Log($"Menu layout: {width}x{height} at ({xPositionOnScreen}, {yPositionOnScreen})", LogLevel.Debug);
+            }
         }
 
         private void CreateUIComponents()
@@ -137,7 +243,7 @@ namespace MobileUISupport.UI
             _spellSlots.Clear();
             _favoriteSlots.Clear();
 
-            // Close button
+            // Close button (X)
             _closeButton = new ClickableTextureComponent(
                 new Rectangle(xPositionOnScreen + width - 52, yPositionOnScreen + 12, 44, 44),
                 Game1.mouseCursors,
@@ -151,20 +257,20 @@ namespace MobileUISupport.UI
 
             for (int i = 0; i < _spellsPerPage; i++)
             {
-                int row = i / GRID_COLUMNS;
-                int col = i % GRID_COLUMNS;
+                int row = i / GridColumns;
+                int col = i % GridColumns;
 
-                int slotX = startX + col * (ICON_SIZE + ICON_SPACING);
-                int slotY = startY + row * (ICON_SIZE + ICON_SPACING);
+                int slotX = startX + col * (IconSize + IconSpacing);
+                int slotY = startY + row * (IconSize + IconSpacing);
 
                 _spellSlots.Add(new ClickableComponent(
-                    new Rectangle(slotX, slotY, ICON_SIZE, ICON_SIZE),
+                    new Rectangle(slotX, slotY, IconSize, IconSize),
                     $"spell_{i}"
                 ));
             }
 
             // Footer area
-            int footerY = _gridArea.Bottom + 16;
+            int footerY = _gridArea.Bottom + 6;
 
             // Page buttons
             if (_totalPages > 1)
@@ -198,15 +304,45 @@ namespace MobileUISupport.UI
             );
 
             // Favorite slots
-            int favStartX = xPositionOnScreen + 200;
+            int favStartX = xPositionOnScreen + 600;
             for (int i = 0; i < 5; i++)
             {
                 _favoriteSlots.Add(new ClickableComponent(
-                    new Rectangle(favStartX + i * 52, footerY + 4, 44, 44),
+                    new Rectangle(favStartX + i * 52, footerY - 6, 44, 44),
                     $"fav_{i + 1}"
                 ));
             }
+
+            // Confirmation dialog buttons
+            int btnWidth = 100;
+            int btnHeight = 44;
+            int btnY = _confirmDialog.Bottom - btnHeight - 20;
+            int btnSpacing = 20;
+
+            _confirmYesButton = new ClickableComponent(
+                new Rectangle(
+                    _confirmDialog.Center.X - btnWidth - btnSpacing / 2,
+                    btnY,
+                    btnWidth,
+                    btnHeight
+                ),
+                "confirm_yes"
+            );
+
+            _confirmNoButton = new ClickableComponent(
+                new Rectangle(
+                    _confirmDialog.Center.X + btnSpacing / 2,
+                    btnY,
+                    btnWidth,
+                    btnHeight
+                ),
+                "confirm_no"
+            );
         }
+
+        /*********
+        ** Helper Methods
+        *********/
 
         private List<SpellData> GetCurrentPageSpells()
         {
@@ -227,47 +363,89 @@ namespace MobileUISupport.UI
             return null;
         }
 
+        /// <summary>
+        /// Play sound dengan config check
+        /// </summary>
+        private void PlaySound(string soundName)
+        {
+            if (!_config.EnableSounds) return;
+
+            try
+            {
+                Game1.playSound(soundName);
+            }
+            catch
+            {
+                // Ignore sound errors
+            }
+        }
+
+        /*********
+        ** Update
+        *********/
+
         public override void update(GameTime time)
         {
             base.update(time);
             _pulseTimer += (float)time.ElapsedGameTime.TotalSeconds;
         }
 
+        /*********
+        ** Input Handling
+        *********/
+
         public override void receiveLeftClick(int x, int y, bool playSound = true)
         {
-            // Close button
-            if (_closeButton?.containsPoint(x, y) == true)
+            // ═══════════════════════════════════════════════════════════
+            // Handle Confirmation Dialog
+            // ═══════════════════════════════════════════════════════════
+            if (_isConfirmingCast)
             {
-                exitThisMenu();
-                try { Game1.playSound("bigDeSelect"); } catch { }
+                HandleConfirmationClick(x, y);
                 return;
             }
 
+            // ═══════════════════════════════════════════════════════════
+            // Close button
+            // ═══════════════════════════════════════════════════════════
+            if (_closeButton?.containsPoint(x, y) == true)
+            {
+                exitThisMenu();
+                PlaySound("bigDeSelect");
+                return;
+            }
+
+            // ═══════════════════════════════════════════════════════════
             // Spell slots
+            // ═══════════════════════════════════════════════════════════
             var pageSpells = GetCurrentPageSpells();
             for (int i = 0; i < _spellSlots.Count && i < pageSpells.Count; i++)
             {
                 if (_spellSlots[i].containsPoint(x, y))
                 {
                     _selectedIndex = i;
-                    try { Game1.playSound("smallSelect"); } catch { }
+                    PlaySound("smallSelect");
                     return;
                 }
             }
 
+            // ═══════════════════════════════════════════════════════════
             // Cast button
+            // ═══════════════════════════════════════════════════════════
             if (_castButton?.containsPoint(x, y) == true)
             {
                 TryCastSelectedSpell();
                 return;
             }
 
+            // ═══════════════════════════════════════════════════════════
             // Page navigation
+            // ═══════════════════════════════════════════════════════════
             if (_prevPageButton?.containsPoint(x, y) == true && _totalPages > 1)
             {
                 _currentPage = (_currentPage - 1 + _totalPages) % _totalPages;
                 _selectedIndex = 0;
-                try { Game1.playSound("shwip"); } catch { }
+                PlaySound("shwip");
                 return;
             }
 
@@ -275,11 +453,13 @@ namespace MobileUISupport.UI
             {
                 _currentPage = (_currentPage + 1) % _totalPages;
                 _selectedIndex = 0;
-                try { Game1.playSound("shwip"); } catch { }
+                PlaySound("shwip");
                 return;
             }
 
+            // ═══════════════════════════════════════════════════════════
             // Favorite slots
+            // ═══════════════════════════════════════════════════════════
             for (int i = 0; i < _favoriteSlots.Count; i++)
             {
                 if (_favoriteSlots[i].containsPoint(x, y))
@@ -288,30 +468,34 @@ namespace MobileUISupport.UI
                     if (_favorites.TryGetValue(slotNum, out var favSpell))
                     {
                         SelectSpellByData(favSpell);
-                        try { Game1.playSound("smallSelect"); } catch { }
+                        PlaySound("smallSelect");
                     }
                     return;
                 }
             }
 
+            // ═══════════════════════════════════════════════════════════
             // Click outside = close
+            // ═══════════════════════════════════════════════════════════
             if (!isWithinBounds(x, y))
             {
                 exitThisMenu();
-                try { Game1.playSound("bigDeSelect"); } catch { }
+                PlaySound("bigDeSelect");
             }
         }
 
         public override void receiveRightClick(int x, int y, bool playSound = true)
         {
+            // Ignore right click during confirmation
+            if (_isConfirmingCast) return;
+
             var pageSpells = GetCurrentPageSpells();
             for (int i = 0; i < _spellSlots.Count && i < pageSpells.Count; i++)
             {
                 if (_spellSlots[i].containsPoint(x, y))
                 {
                     _selectedIndex = i;
-                    // TODO: Show favorite assignment dialog
-                    try { Game1.playSound("coin"); } catch { }
+                    ShowFavoriteMenu(pageSpells[i]);
                     return;
                 }
             }
@@ -319,6 +503,9 @@ namespace MobileUISupport.UI
 
         public override void performHoverAction(int x, int y)
         {
+            // Disable hover during confirmation
+            if (_isConfirmingCast) return;
+
             base.performHoverAction(x, y);
             _hoverText = "";
 
@@ -329,6 +516,12 @@ namespace MobileUISupport.UI
                 if (_spellSlots[i].containsPoint(x, y))
                 {
                     _selectedIndex = i;
+
+                    // Show tooltip if enabled
+                    if (_config.ShowTooltips && pageSpells[i].IsVisible)
+                    {
+                        _hoverText = pageSpells[i].Name;
+                    }
                     return;
                 }
             }
@@ -348,37 +541,59 @@ namespace MobileUISupport.UI
             }
         }
 
+        /*********
+        ** Spell Casting
+        *********/
+
         private void TryCastSelectedSpell()
         {
             var spell = GetSelectedSpell();
             if (spell == null)
             {
-                try { Game1.playSound("cancel"); } catch { }
+                PlaySound("cancel");
                 return;
             }
 
+            // Check if visible and unlocked
             if (!spell.IsVisible || !spell.IsUnlocked)
             {
-                try { Game1.playSound("cancel"); } catch { }
+                PlaySound("cancel");
                 Game1.showRedMessage("Spell is locked!");
                 return;
             }
 
+            // Check mana
             int currentMana = _api.GetCurrentMana(_manaBar, _player);
             if (currentMana < spell.ManaCost)
             {
-                try { Game1.playSound("cancel"); } catch { }
+                PlaySound("cancel");
                 Game1.showRedMessage("Not enough mana!");
                 return;
             }
 
-            // Cast the spell
-            try { Game1.playSound("wand"); } catch { }
+            // Check for high mana confirmation
+            if (_config.ConfirmHighManaCast && spell.ManaCost >= _config.HighManaThreshold)
+            {
+                ShowCastConfirmation(spell);
+                return;
+            }
+
+            // Execute cast
+            ExecuteSpellCast(spell);
+        }
+
+        /// <summary>
+        /// Actually execute the spell cast
+        /// </summary>
+        private void ExecuteSpellCast(SpellData spell)
+        {
+            PlaySound("wand");
             _player.completelyStopAnimatingOrDoingAction();
             _player.faceDirection(2);
 
             bool success = _api.CastSpell(spell, _player, _manaBar);
-            if (success)
+
+            if (success && _config.CloseAfterCast)
             {
                 DelayedAction.functionAfterDelay(() =>
                 {
@@ -386,9 +601,66 @@ namespace MobileUISupport.UI
                     {
                         exitThisMenu(false);
                     }
-                }, 400);
+                }, _config.CloseDelay);
             }
         }
+
+        /*********
+        ** Confirmation Dialog
+        *********/
+
+        /// <summary>
+        /// Show confirmation dialog before casting expensive spell
+        /// </summary>
+        private void ShowCastConfirmation(SpellData spell)
+        {
+            _isConfirmingCast = true;
+            _pendingSpell = spell;
+            PlaySound("bigSelect");
+
+            if (_config.DebugMode)
+            {
+                _monitor.Log($"Showing cast confirmation for: {spell.Name} (Cost: {spell.ManaCost})", LogLevel.Debug);
+            }
+        }
+
+        /// <summary>
+        /// Handle clicks on confirmation dialog
+        /// </summary>
+        private void HandleConfirmationClick(int x, int y)
+        {
+            // Yes button - cast the spell
+            if (_confirmYesButton?.containsPoint(x, y) == true)
+            {
+                if (_pendingSpell != null)
+                {
+                    ExecuteSpellCast(_pendingSpell);
+                }
+                CloseConfirmation();
+                return;
+            }
+
+            // No button or click outside - cancel
+            if (_confirmNoButton?.containsPoint(x, y) == true || !_confirmDialog.Contains(x, y))
+            {
+                PlaySound("bigDeSelect");
+                CloseConfirmation();
+                return;
+            }
+        }
+
+        /// <summary>
+        /// Close confirmation dialog
+        /// </summary>
+        private void CloseConfirmation()
+        {
+            _isConfirmingCast = false;
+            _pendingSpell = null;
+        }
+
+        /*********
+        ** Selection Helpers
+        *********/
 
         private void SelectSpellByData(SpellData targetSpell)
         {
@@ -407,17 +679,122 @@ namespace MobileUISupport.UI
             }
         }
 
+        /// <summary>
+        /// Show favorite assignment menu
+        /// </summary>
+        private void ShowFavoriteMenu(SpellData spell)
+        {
+            // Create response options
+            var responses = new List<Response>();
+
+            // Check if already favorited
+            int existingSlot = 0;
+            foreach (var kvp in _favorites)
+            {
+                if (kvp.Value.IconIndex == spell.IconIndex)
+                {
+                    existingSlot = kvp.Key;
+                    break;
+                }
+            }
+
+            if (existingSlot > 0)
+            {
+                responses.Add(new Response("remove", $"Remove from Slot {existingSlot}"));
+            }
+            else
+            {
+                // Add available slots
+                for (int i = 1; i <= 5; i++)
+                {
+                    if (!_favorites.ContainsKey(i))
+                    {
+                        responses.Add(new Response($"slot_{i}", $"Add to Slot {i}"));
+                    }
+                }
+            }
+
+            responses.Add(new Response("cancel", "Cancel"));
+
+            Game1.currentLocation?.createQuestionDialogue(
+                $"Favorite: {spell.Name}",
+                responses.ToArray(),
+                (who, answer) => HandleFavoriteResponse(spell, answer)
+            );
+        }
+
+        private void HandleFavoriteResponse(SpellData spell, string answer)
+        {
+            if (answer == "cancel" || string.IsNullOrEmpty(answer))
+            {
+                PlaySound("cancel");
+                return;
+            }
+
+            if (answer == "remove")
+            {
+                // Find and remove
+                int slotToRemove = 0;
+                foreach (var kvp in _favorites)
+                {
+                    if (kvp.Value.IconIndex == spell.IconIndex)
+                    {
+                        slotToRemove = kvp.Key;
+                        break;
+                    }
+                }
+
+                if (slotToRemove > 0)
+                {
+                    _favorites.Remove(slotToRemove);
+                    spell.FavoriteSlot = 0;
+                    PlaySound("trashcan");
+                }
+            }
+            else if (answer.StartsWith("slot_"))
+            {
+                int slot = int.Parse(answer.Substring(5));
+
+                // Remove from old slot if exists
+                int oldSlot = 0;
+                foreach (var kvp in _favorites)
+                {
+                    if (kvp.Value.IconIndex == spell.IconIndex)
+                    {
+                        oldSlot = kvp.Key;
+                        break;
+                    }
+                }
+                if (oldSlot > 0)
+                {
+                    _favorites.Remove(oldSlot);
+                }
+
+                // Add to new slot
+                _favorites[slot] = spell;
+                spell.FavoriteSlot = slot;
+                PlaySound("coin");
+            }
+        }
+
+        /*********
+        ** Drawing
+        *********/
+
         public override void draw(SpriteBatch b)
         {
-            // Safety check
             if (b == null) return;
 
-            // Dim background
+            // ═══════════════════════════════════════════════════════════
+            // Background dimming
+            // ═══════════════════════════════════════════════════════════
             b.Draw(Game1.fadeToBlackRect,
                    Game1.graphics.GraphicsDevice.Viewport.Bounds,
-                   Color.Black * 0.6f);
+                   Color.Black * _config.BackgroundOpacity);
 
-            // Main menu background
+            // ═══════════════════════════════════════════════════════════
+            // Main menu box
+            // ═══════════════════════════════════════════════════════════
             IClickableMenu.drawTextureBox(
                 b,
                 Game1.menuTexture,
@@ -431,51 +808,31 @@ namespace MobileUISupport.UI
                 true
             );
 
-            // Header
+            // ═══════════════════════════════════════════════════════════
+            // Draw all sections
+            // ═══════════════════════════════════════════════════════════
             DrawHeader(b);
-
-            // Grid background
-            IClickableMenu.drawTextureBox(
-                b,
-                Game1.menuTexture,
-                new Rectangle(0, 256, 60, 60),
-                _gridArea.X,
-                _gridArea.Y,
-                _gridArea.Width,
-                _gridArea.Height,
-                Color.White * 0.5f,
-                1f,
-                false
-            );
-
-            // Spell grid
+            DrawGridBackground(b);
             DrawSpellGrid(b);
-
-            // Info panel background
-            IClickableMenu.drawTextureBox(
-                b,
-                Game1.menuTexture,
-                new Rectangle(0, 256, 60, 60),
-                _infoPanel.X,
-                _infoPanel.Y,
-                _infoPanel.Width,
-                _infoPanel.Height,
-                Color.White * 0.5f,
-                1f,
-                false
-            );
-
-            // Selected spell info
+            DrawInfoPanelBackground(b);
             DrawSpellInfo(b);
-
-            // Footer
             DrawFooter(b);
 
             // Close button
             _closeButton?.draw(b);
 
+            // ═══════════════════════════════════════════════════════════
+            // Confirmation dialog (on top of everything)
+            // ═══════════════════════════════════════════════════════════
+            if (_isConfirmingCast)
+            {
+                DrawConfirmationDialog(b);
+            }
+
+            // ═══════════════════════════════════════════════════════════
             // Hover text
-            if (!string.IsNullOrEmpty(_hoverText))
+            // ═══════════════════════════════════════════════════════════
+            if (!string.IsNullOrEmpty(_hoverText) && !_isConfirmingCast)
             {
                 IClickableMenu.drawHoverText(b, _hoverText, Game1.smallFont);
             }
@@ -493,8 +850,23 @@ namespace MobileUISupport.UI
                 yPositionOnScreen + 16
             );
 
-            Utility.drawTextWithShadow(b, title, Game1.dialogueFont, titlePos,
-                new Color(86, 22, 12)); // Dark brown color
+            Utility.drawTextWithShadow(b, title, Game1.dialogueFont, titlePos, _titleColor);
+        }
+
+        private void DrawGridBackground(SpriteBatch b)
+        {
+            IClickableMenu.drawTextureBox(
+                b,
+                Game1.menuTexture,
+                new Rectangle(0, 256, 60, 60),
+                _gridArea.X,
+                _gridArea.Y,
+                _gridArea.Width,
+                _gridArea.Height,
+                Color.White * 0.5f,
+                1f,
+                false
+            );
         }
 
         private void DrawSpellGrid(SpriteBatch b)
@@ -519,22 +891,7 @@ namespace MobileUISupport.UI
                     }
                     else
                     {
-                        // Draw lock
-                        IClickableMenu.drawTextureBox(
-                            b, Game1.menuTexture,
-                            new Rectangle(0, 256, 60, 60),
-                            slot.bounds.X, slot.bounds.Y,
-                            slot.bounds.Width, slot.bounds.Height,
-                            Color.Gray * 0.4f, 1f, false
-                        );
-
-                        // Lock icon from cursors
-                        Rectangle lockSource = new Rectangle(107, 442, 7, 8);
-                        Rectangle lockDest = new Rectangle(
-                            slot.bounds.X + 16, slot.bounds.Y + 16,
-                            32, 32
-                        );
-                        b.Draw(Game1.mouseCursors, lockDest, lockSource, Color.White);
+                        DrawLockedSlot(b, slot.bounds);
                     }
 
                     // Favorite star
@@ -552,46 +909,151 @@ namespace MobileUISupport.UI
                     // Selection highlight
                     if (i == _selectedIndex)
                     {
-                        float pulse = 1f + 0.08f * (float)Math.Sin(_pulseTimer * 5f);
-                        int border = 4;
-                        Rectangle highlight = new Rectangle(
-                            slot.bounds.X - border,
-                            slot.bounds.Y - border,
-                            slot.bounds.Width + border * 2,
-                            slot.bounds.Height + border * 2
-                        );
-
-                        // Yellow pulsing border
-                        IClickableMenu.drawTextureBox(
-                            b, Game1.menuTexture,
-                            new Rectangle(0, 256, 60, 60),
-                            highlight.X, highlight.Y,
-                            highlight.Width, highlight.Height,
-                            Color.Gold * 0.9f * pulse,
-                            1f, false
-                        );
-
-                        // Re-draw icon on top
-                        if (spell.IsVisible && spellIconsTexture != null)
-                        {
-                            Rectangle sourceRect = new Rectangle(spell.IconIndex * 16, 0, 16, 16);
-                            Color tint = spell.IsUnlocked ? Color.White : Color.Gray * 0.6f;
-                            b.Draw(spellIconsTexture, slot.bounds, sourceRect, tint);
-                        }
+                        DrawSelectionHighlight(b, slot.bounds, spell, spellIconsTexture);
                     }
                 }
                 else
                 {
                     // Empty slot
-                    IClickableMenu.drawTextureBox(
-                        b, Game1.menuTexture,
-                        new Rectangle(0, 256, 60, 60),
-                        slot.bounds.X, slot.bounds.Y,
-                        slot.bounds.Width, slot.bounds.Height,
-                        Color.Black * 0.2f, 1f, false
-                    );
+                    DrawEmptySlot(b, slot.bounds);
                 }
             }
+        }
+
+        /// <summary>
+        /// Draw locked spell slot
+        /// </summary>
+        private void DrawLockedSlot(SpriteBatch b, Rectangle bounds)
+        {
+            IClickableMenu.drawTextureBox(
+                b, Game1.menuTexture,
+                new Rectangle(0, 256, 60, 60),
+                bounds.X, bounds.Y,
+                bounds.Width, bounds.Height,
+                Color.Gray * 0.4f, 1f, false
+            );
+
+            // Lock icon
+            Rectangle lockSource = new Rectangle(107, 442, 7, 8);
+            Rectangle lockDest = new Rectangle(
+                bounds.X + bounds.Width / 2 - 16,
+                bounds.Y + bounds.Height / 2 - 16,
+                32, 32
+            );
+            b.Draw(Game1.mouseCursors, lockDest, lockSource, Color.White);
+        }
+
+        /// <summary>
+        /// Draw empty slot
+        /// </summary>
+        private void DrawEmptySlot(SpriteBatch b, Rectangle bounds)
+        {
+            IClickableMenu.drawTextureBox(
+                b, Game1.menuTexture,
+                new Rectangle(0, 256, 60, 60),
+                bounds.X, bounds.Y,
+                bounds.Width, bounds.Height,
+                Color.Black * 0.2f, 1f, false
+            );
+        }
+
+        /// <summary>
+        /// Draw selection highlight with animation or static
+        /// </summary>
+        private void DrawSelectionHighlight(SpriteBatch b, Rectangle slot, SpellData spell, Texture2D? spellIconsTexture)
+        {
+            int border = 4;
+            Rectangle highlight = new Rectangle(
+                slot.X - border,
+                slot.Y - border,
+                slot.Width + border * 2,
+                slot.Height + border * 2
+            );
+
+            if (_config.ShowSelectionAnimation)
+            {
+                // Animated pulsing highlight
+                float pulse = 1f + 0.08f * (float)Math.Sin(_pulseTimer * 5f * _config.AnimationSpeed);
+
+                IClickableMenu.drawTextureBox(
+                    b, Game1.menuTexture,
+                    new Rectangle(0, 256, 60, 60),
+                    highlight.X, highlight.Y,
+                    highlight.Width, highlight.Height,
+                    _highlightColor * 0.9f * pulse,
+                    1f, false
+                );
+            }
+            else
+            {
+                // Static highlight
+                DrawStaticHighlight(b, slot);
+            }
+
+            // Re-draw icon on top of highlight
+            if (spell.IsVisible && spellIconsTexture != null)
+            {
+                Rectangle sourceRect = new Rectangle(spell.IconIndex * 16, 0, 16, 16);
+                Color tint = spell.IsUnlocked ? Color.White : Color.Gray * 0.6f;
+                b.Draw(spellIconsTexture, slot, sourceRect, tint);
+            }
+        }
+
+        /// <summary>
+        /// Draw static (non-animated) selection highlight
+        /// </summary>
+        private void DrawStaticHighlight(SpriteBatch b, Rectangle slot)
+        {
+            int border = 4;
+            Rectangle highlight = new Rectangle(
+                slot.X - border,
+                slot.Y - border,
+                slot.Width + border * 2,
+                slot.Height + border * 2
+            );
+
+            // Solid border without animation
+            IClickableMenu.drawTextureBox(
+                b, Game1.menuTexture,
+                new Rectangle(0, 256, 60, 60),
+                highlight.X, highlight.Y,
+                highlight.Width, highlight.Height,
+                _highlightColor * 0.85f,
+                1f, false
+            );
+
+            // Inner glow effect
+            Rectangle innerGlow = new Rectangle(
+                slot.X - 2,
+                slot.Y - 2,
+                slot.Width + 4,
+                slot.Height + 4
+            );
+
+            IClickableMenu.drawTextureBox(
+                b, Game1.menuTexture,
+                new Rectangle(0, 256, 60, 60),
+                innerGlow.X, innerGlow.Y,
+                innerGlow.Width, innerGlow.Height,
+                Color.White * 0.3f,
+                1f, false
+            );
+        }
+
+        private void DrawInfoPanelBackground(SpriteBatch b)
+        {
+            IClickableMenu.drawTextureBox(
+                b,
+                Game1.menuTexture,
+                new Rectangle(0, 256, 60, 60),
+                _infoPanel.X,
+                _infoPanel.Y,
+                _infoPanel.Width,
+                _infoPanel.Height,
+                Color.White * 0.5f,
+                1f,
+                false
+            );
         }
 
         private void DrawSpellInfo(SpriteBatch b)
@@ -605,14 +1067,21 @@ namespace MobileUISupport.UI
             // Spell name
             string name = spell.IsVisible ? spell.Name : "???";
             Vector2 nameSize = Game1.dialogueFont.MeasureString(name);
-            float nameX = _infoPanel.X + (_infoPanel.Width - nameSize.X) / 2;
-            Utility.drawTextWithShadow(b, name, Game1.dialogueFont,
-                new Vector2(nameX, y), new Color(86, 22, 12));
+            float maxWidth = _infoPanel.Width - padding * 2;
+            float scale = Math.Min(1f, maxWidth / nameSize.X);
 
-            y += (int)nameSize.Y + 12;
+            Vector2 namePos = new Vector2(
+                _infoPanel.X + (_infoPanel.Width - nameSize.X * scale) / 2,
+                y
+            );
+
+            b.DrawString(Game1.dialogueFont, name, namePos + new Vector2(2, 2), Color.Black * 0.3f, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+            b.DrawString(Game1.dialogueFont, name, namePos, _titleColor, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
+
+            y += (int)(nameSize.Y * scale) + 12;
 
             // Large icon
-            int iconSize = 72;
+            int iconSize = Math.Min(72, _infoPanel.Width - padding * 4);
             Rectangle iconRect = new Rectangle(
                 _infoPanel.X + (_infoPanel.Width - iconSize) / 2,
                 y, iconSize, iconSize
@@ -637,7 +1106,7 @@ namespace MobileUISupport.UI
             string desc = spell.IsVisible ? spell.Description : "???";
             string wrapped = Game1.parseText(desc, Game1.smallFont, _infoPanel.Width - padding * 2);
             Utility.drawTextWithShadow(b, wrapped, Game1.smallFont,
-                new Vector2(_infoPanel.X + padding, y), Color.White);
+                new Vector2(_infoPanel.X + padding, y), _textColor);
 
             Vector2 descSize = Game1.smallFont.MeasureString(wrapped);
             y += (int)descSize.Y + 12;
@@ -654,29 +1123,34 @@ namespace MobileUISupport.UI
             }
 
             // Cast button
-            if (_castButton != null && spell.IsVisible && spell.IsUnlocked)
-            {
-                int currentMana = _api.GetCurrentMana(_manaBar, _player);
-                bool canCast = currentMana >= spell.ManaCost;
-                Color btnColor = canCast ? new Color(100, 180, 100) : Color.Gray;
+            DrawCastButton(b, spell);
+        }
 
-                IClickableMenu.drawTextureBox(
-                    b, Game1.menuTexture,
-                    new Rectangle(0, 256, 60, 60),
-                    _castButton.bounds.X, _castButton.bounds.Y,
-                    _castButton.bounds.Width, _castButton.bounds.Height,
-                    btnColor, 1f, true
-                );
+        private void DrawCastButton(SpriteBatch b, SpellData spell)
+        {
+            if (_castButton == null) return;
+            if (!spell.IsVisible || !spell.IsUnlocked) return;
 
-                string castText = "CAST";
-                Vector2 castSize = Game1.dialogueFont.MeasureString(castText);
-                Vector2 castPos = new Vector2(
-                    _castButton.bounds.X + (_castButton.bounds.Width - castSize.X) / 2,
-                    _castButton.bounds.Y + (_castButton.bounds.Height - castSize.Y) / 2
-                );
-                Utility.drawTextWithShadow(b, castText, Game1.dialogueFont, castPos,
-                    canCast ? Color.White : Color.DarkGray);
-            }
+            int currentMana = _api.GetCurrentMana(_manaBar, _player);
+            bool canCast = currentMana >= spell.ManaCost;
+            Color btnColor = canCast ? new Color(100, 180, 100) : Color.Gray;
+
+            IClickableMenu.drawTextureBox(
+                b, Game1.menuTexture,
+                new Rectangle(0, 256, 60, 60),
+                _castButton.bounds.X, _castButton.bounds.Y,
+                _castButton.bounds.Width, _castButton.bounds.Height,
+                btnColor, 1f, true
+            );
+
+            string castText = "CAST";
+            Vector2 castSize = Game1.dialogueFont.MeasureString(castText);
+            Vector2 castPos = new Vector2(
+                _castButton.bounds.X + (_castButton.bounds.Width - castSize.X) / 2,
+                _castButton.bounds.Y + (_castButton.bounds.Height - castSize.Y) / 2
+            );
+            Utility.drawTextWithShadow(b, castText, Game1.dialogueFont, castPos,
+                canCast ? Color.White : Color.DarkGray);
         }
 
         private void DrawFooter(SpriteBatch b)
@@ -691,18 +1165,25 @@ namespace MobileUISupport.UI
 
                 string pageText = $"{_currentPage + 1}/{_totalPages}";
                 Vector2 pagePos = new Vector2(
-                    xPositionOnScreen + 95,
-                    footerY + 10
+                    xPositionOnScreen + 85,
+                    footerY - 5
                 );
-                Utility.drawTextWithShadow(b, pageText, Game1.smallFont, pagePos, Color.White);
+                Utility.drawTextWithShadow(b, pageText, Game1.smallFont, pagePos, _textColor);
             }
 
-            // Favorites
+            // Favorites label
             string favLabel = "Favorites:";
             Utility.drawTextWithShadow(b, favLabel, Game1.smallFont,
-                new Vector2(xPositionOnScreen + 200 - 70, footerY + 14), Color.Gold);
+                new Vector2(xPositionOnScreen + 600 - 120, footerY - 5), Color.Brown);
 
+            // Favorite slots
+            DrawFavoriteSlots(b);
+        }
+
+        private void DrawFavoriteSlots(SpriteBatch b)
+        {
             var spellIconsTexture = _api.SpellIconsTexture;
+
             for (int i = 0; i < _favoriteSlots.Count; i++)
             {
                 var slot = _favoriteSlots[i];
@@ -735,6 +1216,105 @@ namespace MobileUISupport.UI
                 }
             }
         }
+
+        /// <summary>
+        /// Draw the confirmation dialog for high mana spells
+        /// </summary>
+        private void DrawConfirmationDialog(SpriteBatch b)
+        {
+            // Dim the menu behind dialog
+            b.Draw(Game1.fadeToBlackRect,
+                   new Rectangle(xPositionOnScreen, yPositionOnScreen, width, height),
+                   Color.Black * 0.5f);
+
+            // Dialog box
+            IClickableMenu.drawTextureBox(
+                b,
+                Game1.menuTexture,
+                new Rectangle(0, 256, 60, 60),
+                _confirmDialog.X,
+                _confirmDialog.Y,
+                _confirmDialog.Width,
+                _confirmDialog.Height,
+                Color.White,
+                1f,
+                true
+            );
+
+            // Title
+            string title = "Confirm Cast";
+            Vector2 titleSize = Game1.dialogueFont.MeasureString(title);
+            Vector2 titlePos = new Vector2(
+                _confirmDialog.X + (_confirmDialog.Width - titleSize.X) / 2,
+                _confirmDialog.Y + 16
+            );
+            Utility.drawTextWithShadow(b, title, Game1.dialogueFont, titlePos, _titleColor);
+
+            // Message
+            if (_pendingSpell != null)
+            {
+                string message = $"Cast {_pendingSpell.Name}?";
+                string manaCost = $"Mana Cost: {_pendingSpell.ManaCost}";
+
+                Vector2 msgSize = Game1.smallFont.MeasureString(message);
+                Vector2 msgPos = new Vector2(
+                    _confirmDialog.X + (_confirmDialog.Width - msgSize.X) / 2,
+                    _confirmDialog.Y + 60
+                );
+                Utility.drawTextWithShadow(b, message, Game1.smallFont, msgPos, _textColor);
+
+                Vector2 manaSize = Game1.smallFont.MeasureString(manaCost);
+                Vector2 manaPos = new Vector2(
+                    _confirmDialog.X + (_confirmDialog.Width - manaSize.X) / 2,
+                    _confirmDialog.Y + 85
+                );
+                Utility.drawTextWithShadow(b, manaCost, Game1.smallFont, manaPos, Color.CornflowerBlue);
+            }
+
+            // Yes button
+            if (_confirmYesButton != null)
+            {
+                IClickableMenu.drawTextureBox(
+                    b, Game1.menuTexture,
+                    new Rectangle(0, 256, 60, 60),
+                    _confirmYesButton.bounds.X, _confirmYesButton.bounds.Y,
+                    _confirmYesButton.bounds.Width, _confirmYesButton.bounds.Height,
+                    new Color(100, 180, 100), 1f, true
+                );
+
+                string yesText = "Yes";
+                Vector2 yesSize = Game1.dialogueFont.MeasureString(yesText);
+                Vector2 yesPos = new Vector2(
+                    _confirmYesButton.bounds.X + (_confirmYesButton.bounds.Width - yesSize.X) / 2,
+                    _confirmYesButton.bounds.Y + (_confirmYesButton.bounds.Height - yesSize.Y) / 2
+                );
+                Utility.drawTextWithShadow(b, yesText, Game1.dialogueFont, yesPos, Color.White);
+            }
+
+            // No button
+            if (_confirmNoButton != null)
+            {
+                IClickableMenu.drawTextureBox(
+                    b, Game1.menuTexture,
+                    new Rectangle(0, 256, 60, 60),
+                    _confirmNoButton.bounds.X, _confirmNoButton.bounds.Y,
+                    _confirmNoButton.bounds.Width, _confirmNoButton.bounds.Height,
+                    new Color(180, 100, 100), 1f, true
+                );
+
+                string noText = "No";
+                Vector2 noSize = Game1.dialogueFont.MeasureString(noText);
+                Vector2 noPos = new Vector2(
+                    _confirmNoButton.bounds.X + (_confirmNoButton.bounds.Width - noSize.X) / 2,
+                    _confirmNoButton.bounds.Y + (_confirmNoButton.bounds.Height - noSize.Y) / 2
+                );
+                Utility.drawTextWithShadow(b, noText, Game1.dialogueFont, noPos, Color.White);
+            }
+        }
+
+        /*********
+        ** Window Resize Handler
+        *********/
 
         public override void gameWindowSizeChanged(Rectangle oldBounds, Rectangle newBounds)
         {
