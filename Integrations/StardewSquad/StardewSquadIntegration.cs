@@ -246,7 +246,11 @@ namespace MobileUISupport.Integrations.StardewSquad
         /// </summary>
         private void OnSquadButtonPressed()
         {
-            Logger.Debug("Squad interaction button pressed");
+            Logger.Debug("╔══════════════════════════════════════╗");
+            Logger.Debug("║  CALLBACK FROM ADDONS API            ║");
+            Logger.Debug($"║  _usingAddonsAPI: {_usingAddonsAPI,-18}║");
+            Logger.Debug($"║  FallbackButton: {(FallbackButton != null ? "EXISTS" : "NULL"),-19}║");
+            Logger.Debug("╚══════════════════════════════════════╝");
             TriggerNearbyNPCInteraction();
         }
 

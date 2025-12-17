@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MobileUISupport;
-using MobileUISupport.Framework;
+using MobileUISupport.Integrations.MagicStardew;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Menus;

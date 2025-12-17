@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Graphics;
 
-namespace MobileUISupport.Framework
+namespace MobileUISupport.Integrations.MagicStardew
 {
     /// <summary>
     /// Data class yang merepresentasikan sebuah spell

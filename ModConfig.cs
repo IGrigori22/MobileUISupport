@@ -2,6 +2,16 @@
 {
     public sealed class ModConfig
     {
+        // ═══════════════════════════════════════════════════════════
+        // Lookup Anything - Config
+        // ═══════════════════════════════════════════════════════════
+
+        /// <summary>Enable integrasi dengan Lookup Anything.</summary>
+        public bool EnableLookupAnythingIntegration { get; set; } = true;
+
+        /// <summary>Gunakan custom mobile search menu (lebih nyaman untuk touch).</summary>
+        public bool UseMobileSearchMenu { get; set; } = true;
+
         // ═══════════════════════════════════════════════════════
         // THE STARDEW SQUAD - Button Settings
         // ═══════════════════════════════════════════════════════

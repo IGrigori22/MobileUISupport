@@ -2,6 +2,7 @@
 using MobileUISupport.Integrations.AddonsAPI;
 using MobileUISupport.Integrations.Base;
 using MobileUISupport.Integrations.GMCM;
+using MobileUISupport.Integrations.LookupAnything;
 using MobileUISupport.Integrations.MagicStardew;
 using MobileUISupport.Integrations.StardewSquad;
 
@@ -26,6 +27,8 @@ namespace MobileUISupport.Integrations
         public AddonsAPIIntegration? AddonsAPI { get; private set; }
         public MagicStardewIntegration? Magic { get; private set; }
         public StardewSquadIntegration? Squad { get; private set; }
+        public LookupAnythingIntegration Lookup {  get; private set; }
+       
 
         // ═══════════════════════════════════════════════════════
         // Statistics
@@ -65,6 +68,9 @@ namespace MobileUISupport.Integrations
             Squad = new StardewSquadIntegration();
             RegisterIntegration(Squad);
 
+            Lookup = new LookupAnythingIntegration();
+            RegisterIntegration(Lookup);
+
             // ─────────────────────────────────────────────────────
             // Phase 3: Initialize all (kecuali yang sudah di-init)
             // ─────────────────────────────────────────────────────
@@ -96,7 +102,9 @@ namespace MobileUISupport.Integrations
             if (AddonsAPI?.IsAvailable == true)
             {
                 Magic?.SetAddonsAPI(AddonsAPI);
-                Squad?.SetAddonsAPI(AddonsAPI); // Uncomment jika Squad juga butuh
+                Squad?.SetAddonsAPI(AddonsAPI);
+                Lookup?.SetAddonsAPI(AddonsAPI);
+
 
                 Logger.Debug("Wired AddonsAPI dependencies");
             }

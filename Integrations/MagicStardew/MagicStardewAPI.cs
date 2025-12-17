@@ -3,7 +3,7 @@ using StardewModdingAPI;
 using StardewValley;
 using System.Reflection;
 
-namespace MobileUISupport.Framework
+namespace MobileUISupport.Integrations.MagicStardew
 {
     /// <summary>
     /// API untuk berinteraksi dengan mod Magic Stardew

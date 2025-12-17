@@ -1,4 +1,4 @@
-﻿using MobileUISupport.Framework;
+﻿using MobileUISupport.Integrations.MagicStardew;
 using MobileUISupport.UI;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
