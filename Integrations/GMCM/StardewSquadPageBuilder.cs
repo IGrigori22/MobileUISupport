@@ -46,16 +46,16 @@ namespace MobileUISupport.Integrations.GMCM
 
             api.AddBoolOption(
                 mod: manifest,
-                getValue: () => config.EnableSquadSupport,
-                setValue: v => config.EnableSquadSupport = v,
+                getValue: () => config.StardewSquad.EnableSupport,
+                setValue: v => config.StardewSquad.EnableSupport = v,
                 name: () => "Enable Squad Button",
                 tooltip: () => "Show recruit/dismiss button for The Stardew Squad mod"
             );
 
             api.AddNumberOption(
                 mod: manifest,
-                getValue: () => config.SquadDetectionRadius,
-                setValue: v => config.SquadDetectionRadius = v,
+                getValue: () => config.StardewSquad.DetectionRadius,
+                setValue: v => config.StardewSquad.DetectionRadius = v,
                 name: () => "Detection Radius",
                 tooltip: () => "How close to NPC to enable button (in tiles)",
                 min: 1f, max: 10f, interval: 0.5f
@@ -63,16 +63,16 @@ namespace MobileUISupport.Integrations.GMCM
 
             api.AddBoolOption(
                 mod: manifest,
-                getValue: () => config.ShowNPCName,
-                setValue: v => config.ShowNPCName = v,
+                getValue: () => config.StardewSquad.ShowNPCName,
+                setValue: v => config.StardewSquad.ShowNPCName = v,
                 name: () => "Show NPC Name",
                 tooltip: () => "Display nearby NPC name above the button"
             );
 
             api.AddBoolOption(
                 mod: manifest,
-                getValue: () => config.ShowButtonOnlyWhenNearNPC,
-                setValue: v => config.ShowButtonOnlyWhenNearNPC = v,
+                getValue: () => config.StardewSquad.ShowButtonOnlyWhenNearNPC,
+                setValue: v => config.StardewSquad.ShowButtonOnlyWhenNearNPC = v,
                 name: () => "Hide When No NPC Nearby",
                 tooltip: () => "Only show button when a recruitable NPC is within range"
             );
@@ -92,8 +92,8 @@ namespace MobileUISupport.Integrations.GMCM
 
             api.AddTextOption(
                 mod: manifest,
-                getValue: () => config.SquadButtonAnchor.ToString(),
-                setValue: v => config.SquadButtonAnchor = Enum.Parse<ButtonAnchor>(v),
+                getValue: () => config.StardewSquad.ButtonAnchor.ToString(),
+                setValue: v => config.StardewSquad.ButtonAnchor = Enum.Parse<ButtonAnchor>(v),
                 name: () => "Anchor Point",
                 tooltip: () => "Which corner/edge of the screen to anchor the button to",
                 allowedValues: Enum.GetNames<ButtonAnchor>(),
@@ -102,8 +102,8 @@ namespace MobileUISupport.Integrations.GMCM
 
             api.AddNumberOption(
                 mod: manifest,
-                getValue: () => config.SquadButtonOffsetX,
-                setValue: v => config.SquadButtonOffsetX = v,
+                getValue: () => config.StardewSquad.ButtonOffsetX,
+                setValue: v => config.StardewSquad.ButtonOffsetX = v,
                 name: () => "Horizontal Offset",
                 tooltip: () => "Distance from the anchor edge in pixels (horizontal)",
                 min: 0, max: 500, interval: 10
@@ -111,8 +111,8 @@ namespace MobileUISupport.Integrations.GMCM
 
             api.AddNumberOption(
                 mod: manifest,
-                getValue: () => config.SquadButtonOffsetY,
-                setValue: v => config.SquadButtonOffsetY = v,
+                getValue: () => config.StardewSquad.ButtonOffsetY,
+                setValue: v => config.StardewSquad.ButtonOffsetY = v,
                 name: () => "Vertical Offset",
                 tooltip: () => "Distance from the anchor edge in pixels (vertical)",
                 min: -300, max: 500, interval: 10
@@ -129,8 +129,8 @@ namespace MobileUISupport.Integrations.GMCM
 
             api.AddNumberOption(
                 mod: manifest,
-                getValue: () => config.SquadButtonScale,
-                setValue: v => config.SquadButtonScale = v,
+                getValue: () => config.StardewSquad.ButtonScale,
+                setValue: v => config.StardewSquad.ButtonScale = v,
                 name: () => "Button Scale",
                 tooltip: () => "Size multiplier for the button (1.0 = 64px base size)",
                 min: 0.5f, max: 3.0f, interval: 0.25f
@@ -138,8 +138,8 @@ namespace MobileUISupport.Integrations.GMCM
 
             api.AddNumberOption(
                 mod: manifest,
-                getValue: () => config.SquadButtonOpacity,
-                setValue: v => config.SquadButtonOpacity = v,
+                getValue: () => config.StardewSquad.ButtonOpacity,
+                setValue: v => config.StardewSquad.ButtonOpacity = v,
                 name: () => "Button Opacity",
                 tooltip: () => "Transparency of the button (0.3 = very transparent, 1.0 = solid)",
                 min: 0.3f, max: 1.0f, interval: 0.05f

@@ -19,7 +19,7 @@ namespace MobileUISupport.Integrations.GMCM
         // Fields
         // ═══════════════════════════════════════════════════════
 
-        private IGenericModConfigMenuApi? _api;
+        private IGenericModConfigMenuApi _api;
         private readonly List<IGMCMPageBuilder> _pageBuilders = new();
 
         // ═══════════════════════════════════════════════════════
@@ -113,6 +113,15 @@ namespace MobileUISupport.Integrations.GMCM
 
         private void BuildMainPage()
         {
+
+            _api.AddBoolOption(
+                mod: Manifest,
+                getValue: () => Config.DebugMode,
+                setValue: v => Config.DebugMode = v,
+                name: () => "Debug Mode",
+                tooltip: () => "Show debug information and hitbox overlay"
+            );
+
             // Add navigation links untuk setiap page
             foreach (var builder in _pageBuilders)
             {
@@ -155,37 +164,37 @@ namespace MobileUISupport.Integrations.GMCM
         private static void CopyConfigValues(ModConfig source, ModConfig target)
         {
             // Squad settings
-            target.EnableSquadSupport = source.EnableSquadSupport;
-            target.SquadDetectionRadius = source.SquadDetectionRadius;
-            target.SquadButtonAnchor = source.SquadButtonAnchor;
-            target.SquadButtonOffsetX = source.SquadButtonOffsetX;
-            target.SquadButtonOffsetY = source.SquadButtonOffsetY;
-            target.SquadButtonScale = source.SquadButtonScale;
-            target.SquadButtonOpacity = source.SquadButtonOpacity;
-            target.ShowNPCName = source.ShowNPCName;
-            target.ShowButtonOnlyWhenNearNPC = source.ShowButtonOnlyWhenNearNPC;
+            target.StardewSquad.EnableSupport = source.StardewSquad.EnableSupport;
+            target.StardewSquad.DetectionRadius = source.StardewSquad.DetectionRadius;
+            target.StardewSquad.ButtonAnchor = source.StardewSquad.ButtonAnchor;
+            target.StardewSquad.ButtonOffsetX = source.StardewSquad.ButtonOffsetX;
+            target.StardewSquad.ButtonOffsetY = source.StardewSquad.ButtonOffsetY;
+            target.StardewSquad.ButtonScale = source.StardewSquad.ButtonScale;
+            target.StardewSquad.ButtonOpacity = source.StardewSquad.ButtonOpacity;
+            target.StardewSquad.ShowNPCName = source.StardewSquad.ShowNPCName;
+            target.StardewSquad.ShowButtonOnlyWhenNearNPC = source.StardewSquad.ShowNoNPCNearbyMessage;
 
             // Magic settings
-            target.SpellIconSize = source.SpellIconSize;
-            target.GridColumns = source.GridColumns;
-            target.GridRows = source.GridRows;
-            target.IconSpacing = source.IconSpacing;
-            target.MenuPadding = source.MenuPadding;
-            target.ShowCastAnimation = source.ShowCastAnimation;
-            target.ThemeColor = source.ThemeColor;
-            target.ShowSelectionAnimation = source.ShowSelectionAnimation;
-            target.AnimationSpeed = source.AnimationSpeed;
-            target.BackgroundOpacity = source.BackgroundOpacity;
-            target.CloseAfterCast = source.CloseAfterCast;
-            target.CloseDelay = source.CloseDelay;
-            target.ShowTooltips = source.ShowTooltips;
-            target.ConfirmHighManaCast = source.ConfirmHighManaCast;
-            target.HighManaThreshold = source.HighManaThreshold;
-            target.EnableSounds = source.EnableSounds;
+            target.MagicStardew.EnableSupport = source.MagicStardew.EnableSupport;
+            target.MagicStardew.SpellIconSize = source.MagicStardew.SpellIconSize;
+            target.MagicStardew.GridColumns = source.MagicStardew.GridColumns;
+            target.MagicStardew.GridRows = source.MagicStardew.GridRows;
+            target.MagicStardew.IconSpacing = source.MagicStardew.IconSpacing;
+            target.MagicStardew.MenuPadding = source.MagicStardew.MenuPadding;
+            target.MagicStardew.ShowCastAnimation = source.MagicStardew.ShowCastAnimation;
+            target.MagicStardew.ThemeColor = source.MagicStardew.ThemeColor;
+            target.MagicStardew.ShowSelectionAnimation = source.MagicStardew.ShowSelectionAnimation;
+            target.MagicStardew.AnimationSpeed = source.MagicStardew.AnimationSpeed;
+            target.MagicStardew.BackgroundOpacity = source.MagicStardew.BackgroundOpacity;
+            target.MagicStardew.CloseAfterCast = source.MagicStardew.CloseAfterCast;
+            target.MagicStardew.CloseDelay = source.MagicStardew.CloseDelay;
+            target.MagicStardew.ShowTooltips = source.MagicStardew.ShowTooltips;
+            target.MagicStardew.ConfirmHighManaCast = source.MagicStardew.ConfirmHighManaCast;
+            target.MagicStardew.HighManaThreshold = source.MagicStardew.HighManaThreshold;
+            target.MagicStardew.EnableSounds = source.MagicStardew.EnableSounds;
 
             // Advanced settings
             target.DebugMode = source.DebugMode;
-            target.UseOriginalMenu = source.UseOriginalMenu;
         }
     }
 }

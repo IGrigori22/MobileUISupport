@@ -29,24 +29,24 @@ namespace MobileUISupport.Integrations.StardewSquad
 
         public override string ModId => StardewSquadAPI.MOD_ID;
         public override string DisplayName => "The Stardew Squad";
-        public override bool IsEnabled => Config.EnableSquadSupport;
+        public override bool IsEnabled => Config.StardewSquad.EnableSupport;
 
         // ═══════════════════════════════════════════════════════
         // Properties - Integration Specific
         // ═══════════════════════════════════════════════════════
 
-        public StardewSquadAPI? API { get; private set; }
+        public StardewSquadAPI API { get; private set; }
         
         /// <summary>
         /// Fallback button - hanya digunakan jika AddonsAPI tidak tersedia.
         /// </summary>
-        public SquadRecruitButton? FallbackButton { get; private set; }
+        public SquadRecruitButton FallbackButton { get; private set; }
 
         // Reference ke AddonsAPI
-        private AddonsAPIIntegration? _addonsAPI;
+        private AddonsAPIIntegration _addonsAPI;
 
         // Icon Texture
-        private Texture2D? _squadIcon;
+        private Texture2D _squadIcon;
 
         // Flag untuk tracking mode yang digunakan
         private bool _usingAddonsAPI;
@@ -272,7 +272,7 @@ namespace MobileUISupport.Integrations.StardewSquad
             }
 
             // Find nearest eligible NPC
-            NPC? nearestNPC = FindNearestEligibleNPC(location, player!);
+            NPC nearestNPC = FindNearestEligibleNPC(location, player!);
 
             if (nearestNPC != null)
             {
@@ -287,7 +287,7 @@ namespace MobileUISupport.Integrations.StardewSquad
                 Game1.playSound("cancel");
 
                 // Optional: Show message to player
-                if (Config.ShowNoNPCNearbyMessage)
+                if (Config.StardewSquad.ShowNoNPCNearbyMessage)
                 {
                     Game1.addHUDMessage(new HUDMessage("No villager nearby to interact with", HUDMessage.error_type));
                 }
@@ -299,10 +299,10 @@ namespace MobileUISupport.Integrations.StardewSquad
         /// <summary>
         /// Find NPC terdekat yang eligible untuk squad.
         /// </summary>
-        private NPC? FindNearestEligibleNPC(GameLocation location, Farmer player)
+        private NPC FindNearestEligibleNPC(GameLocation location, Farmer player)
         {
-            float radius = Config.SquadDetectionRadius;
-            NPC? nearest = null;
+            float radius = Config.StardewSquad.DetectionRadius;
+            NPC nearest = null;
             float nearestDist = float.MaxValue;
 
             // Check villagers

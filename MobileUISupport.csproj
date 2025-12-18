@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
 	  <GamePath>C:\Users\ASUS\Downloads\Stardew.Valley.Gamdie.com\Stardew Valley</GamePath>
 	  <LangVersion>Latest</LangVersion>
 	  <EnableHarmony>true</EnableHarmony>

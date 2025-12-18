@@ -32,14 +32,14 @@ namespace MobileUISupport.UI
         // Fields - Textures
         // ═══════════════════════════════════════════════════════
 
-        private Texture2D? _customIconTexture;
+        private Texture2D _customIconTexture;
         private bool _useCustomIcon;
 
         // ═══════════════════════════════════════════════════════
         // Fields - State
         // ═══════════════════════════════════════════════════════
 
-        private NPC? _targetNPC;
+        private NPC _targetNPC;
         private bool _isPressed;
         private bool _isHeldDown;
         private uint _lastDetectionTick;
@@ -60,8 +60,8 @@ namespace MobileUISupport.UI
         // ═══════════════════════════════════════════════════════
 
         public Rectangle Bounds => _bounds;
-        public NPC? TargetNPC => _targetNPC;
-        public bool IsVisible => Config.EnableSquadSupport && _api.IsInitialized;
+        public NPC TargetNPC => _targetNPC;
+        public bool IsVisible => Config.StardewSquad.EnableSupport && _api.IsInitialized;
         public bool IsEnabled => _isEnabled && _targetNPC != null;
 
         // ═══════════════════════════════════════════════════════
@@ -120,7 +120,7 @@ namespace MobileUISupport.UI
         {
             int viewWidth = Game1.uiViewport.Width;
             int viewHeight = Game1.uiViewport.Height;
-            int buttonSize = (int)(BASE_BUTTON_SIZE * Config.SquadButtonScale);
+            int buttonSize = (int)(BASE_BUTTON_SIZE * Config.StardewSquad.ButtonScale);
 
             var position = CalculatePosition(viewWidth, viewHeight, buttonSize);
 
@@ -133,10 +133,10 @@ namespace MobileUISupport.UI
 
         private Point CalculatePosition(int viewWidth, int viewHeight, int buttonSize)
         {
-            int offsetX = Config.SquadButtonOffsetX;
-            int offsetY = Config.SquadButtonOffsetY;
+            int offsetX = Config.StardewSquad.ButtonOffsetX;
+            int offsetY = Config.StardewSquad.ButtonOffsetY;
 
-            return Config.SquadButtonAnchor switch
+            return Config.StardewSquad.ButtonAnchor switch
             {
                 ButtonAnchor.TopLeft => new Point(offsetX, offsetY),
                 ButtonAnchor.TopRight => new Point(viewWidth - buttonSize - offsetX, offsetY),
@@ -272,7 +272,7 @@ namespace MobileUISupport.UI
             if (!IsVisible)
                 return;
 
-            if (Config.ShowButtonOnlyWhenNearNPC && !_isEnabled)
+            if (Config.StardewSquad.ShowButtonOnlyWhenNearNPC && !_isEnabled)
                 return;
 
             bool isHovered = IsMouseOver();
@@ -280,7 +280,7 @@ namespace MobileUISupport.UI
             DrawButtonBackground(b, isHovered);
             DrawButtonIcon(b);
 
-            if (_isEnabled && _targetNPC != null && Config.ShowNPCName)
+            if (_isEnabled && _targetNPC != null && Config.StardewSquad.ShowNPCName)
             {
                 DrawNPCLabel(b);
             }
@@ -308,9 +308,9 @@ namespace MobileUISupport.UI
 
             var player = Game1.player;
             var location = player.currentLocation;
-            float radius = Config.SquadDetectionRadius;
+            float radius = Config.StardewSquad.DetectionRadius;
 
-            NPC? nearest = null;
+            NPC nearest = null;
             float nearestDist = float.MaxValue;
 
             // Check NPCs
@@ -384,7 +384,7 @@ namespace MobileUISupport.UI
 
         private void DrawButtonBackground(SpriteBatch b, bool isHovered)
         {
-            float baseOpacity = Config.SquadButtonOpacity;
+            float baseOpacity = Config.StardewSquad.ButtonOpacity;
             Color boxColor = GetButtonColor(isHovered, baseOpacity);
 
             int pressOffset = _isHeldDown ? 4 : 0;

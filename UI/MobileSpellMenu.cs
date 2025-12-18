@@ -40,30 +40,30 @@ namespace MobileUISupport.UI
         private float _pulseTimer = 0f;
         private string _hoverText = "";
         private bool _isConfirmingCast = false;
-        private SpellData? _pendingSpell = null;
+        private SpellData _pendingSpell = null;
 
         /*********
         ** UI Components
         *********/
         private List<ClickableComponent> _spellSlots = new();
-        private ClickableTextureComponent? _prevPageButton;
-        private ClickableTextureComponent? _nextPageButton;
-        private ClickableTextureComponent? _closeButton;
-        private ClickableComponent? _castButton;
+        private ClickableTextureComponent _prevPageButton;
+        private ClickableTextureComponent _nextPageButton;
+        private ClickableTextureComponent _closeButton;
+        private ClickableComponent _castButton;
         private List<ClickableComponent> _favoriteSlots = new();
 
         // Confirmation dialog buttons
-        private ClickableComponent? _confirmYesButton;
-        private ClickableComponent? _confirmNoButton;
+        private ClickableComponent _confirmYesButton;
+        private ClickableComponent _confirmNoButton;
 
         /*********
         ** Layout (from config)
         *********/
-        private int IconSize => _config.SpellIconSize;
-        private int IconSpacing => _config.IconSpacing;
-        private int GridColumns => _config.GridColumns;
-        private int GridRows => _config.GridRows;
-        private int MenuPadding => _config.MenuPadding;
+        private int IconSize => _config.MagicStardew.SpellIconSize;
+        private int IconSpacing => _config.MagicStardew.IconSpacing;
+        private int GridColumns => _config.MagicStardew.GridColumns;
+        private int GridRows => _config.MagicStardew.GridRows;
+        private int MenuPadding => _config.MagicStardew.MenuPadding;
 
         /*********
         ** Calculated Areas
@@ -108,7 +108,7 @@ namespace MobileUISupport.UI
             _totalPages = Math.Max(1, (int)Math.Ceiling((double)_spells.Count / _spellsPerPage));
 
             // Setup theme colors
-            ApplyTheme(_config.ThemeColor);
+            ApplyTheme(_config.MagicStardew.ThemeColor);
 
             // Calculate layout and create components
             CalculateLayout();
@@ -353,7 +353,7 @@ namespace MobileUISupport.UI
             return _spells.Skip(startIndex).Take(_spellsPerPage).ToList();
         }
 
-        private SpellData? GetSelectedSpell()
+        private SpellData GetSelectedSpell()
         {
             var pageSpells = GetCurrentPageSpells();
             if (_selectedIndex >= 0 && _selectedIndex < pageSpells.Count)
@@ -368,7 +368,7 @@ namespace MobileUISupport.UI
         /// </summary>
         private void PlaySound(string soundName)
         {
-            if (!_config.EnableSounds) return;
+            if (!_config.MagicStardew.EnableSounds) return;
 
             try
             {
@@ -518,7 +518,7 @@ namespace MobileUISupport.UI
                     _selectedIndex = i;
 
                     // Show tooltip if enabled
-                    if (_config.ShowTooltips && pageSpells[i].IsVisible)
+                    if (_config.MagicStardew.ShowTooltips && pageSpells[i].IsVisible)
                     {
                         _hoverText = pageSpells[i].Name;
                     }
@@ -572,7 +572,7 @@ namespace MobileUISupport.UI
             }
 
             // Check for high mana confirmation
-            if (_config.ConfirmHighManaCast && spell.ManaCost >= _config.HighManaThreshold)
+            if (_config.MagicStardew.ConfirmHighManaCast && spell.ManaCost >= _config.MagicStardew.HighManaThreshold)
             {
                 ShowCastConfirmation(spell);
                 return;
@@ -593,7 +593,7 @@ namespace MobileUISupport.UI
 
             bool success = _api.CastSpell(spell, _player, _manaBar);
 
-            if (success && _config.CloseAfterCast)
+            if (success && _config.MagicStardew.CloseAfterCast)
             {
                 DelayedAction.functionAfterDelay(() =>
                 {
@@ -601,7 +601,7 @@ namespace MobileUISupport.UI
                     {
                         exitThisMenu(false);
                     }
-                }, _config.CloseDelay);
+                }, _config.MagicStardew.CloseDelay);
             }
         }
 
@@ -790,7 +790,7 @@ namespace MobileUISupport.UI
             // ═══════════════════════════════════════════════════════════
             b.Draw(Game1.fadeToBlackRect,
                    Game1.graphics.GraphicsDevice.Viewport.Bounds,
-                   Color.Black * _config.BackgroundOpacity);
+                   Color.Black * _config.MagicStardew.BackgroundOpacity);
 
             // ═══════════════════════════════════════════════════════════
             // Main menu box
@@ -960,7 +960,7 @@ namespace MobileUISupport.UI
         /// <summary>
         /// Draw selection highlight with animation or static
         /// </summary>
-        private void DrawSelectionHighlight(SpriteBatch b, Rectangle slot, SpellData spell, Texture2D? spellIconsTexture)
+        private void DrawSelectionHighlight(SpriteBatch b, Rectangle slot, SpellData spell, Texture2D spellIconsTexture)
         {
             int border = 4;
             Rectangle highlight = new Rectangle(
@@ -970,10 +970,10 @@ namespace MobileUISupport.UI
                 slot.Height + border * 2
             );
 
-            if (_config.ShowSelectionAnimation)
+            if (_config.MagicStardew.ShowSelectionAnimation)
             {
                 // Animated pulsing highlight
-                float pulse = 1f + 0.08f * (float)Math.Sin(_pulseTimer * 5f * _config.AnimationSpeed);
+                float pulse = 1f + 0.08f * (float)Math.Sin(_pulseTimer * 5f * _config.MagicStardew.AnimationSpeed);
 
                 IClickableMenu.drawTextureBox(
                     b, Game1.menuTexture,

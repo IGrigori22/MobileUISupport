@@ -112,11 +112,11 @@ namespace MobileUISupport.Framework
             var config = ModServices.Config;
 
             Section("Config Summary");
-            Debug($"  Grid: {config.GridColumns}x{config.GridRows}");
-            Debug($"  Icon Size: {config.SpellIconSize}px");
-            Debug($"  Theme: {config.ThemeColor}");
-            Debug($"  Close After Cast: {config.CloseAfterCast}");
-            Debug($"  Squad Support: {config.EnableSquadSupport}");
+            Debug($"  Grid: {config.MagicStardew.GridColumns}x{config.MagicStardew.GridRows}");
+            Debug($"  Icon Size: {config.MagicStardew.SpellIconSize}px");
+            Debug($"  Theme: {config.MagicStardew.ThemeColor}");
+            Debug($"  Close After Cast: {config.MagicStardew.CloseAfterCast}");
+            Debug($"  Squad Support: {config.StardewSquad.EnableSupport}");
         }
 
         /// <summary>

@@ -16,10 +16,12 @@ namespace MobileUISupport.Integrations.MagicStardew
     public class MagicStardewIntegration : BaseIntegration
     {
         // ═══════════════════════════════════════════════════════
-        // Constants - Button IDs
+        // Constants
         // ═══════════════════════════════════════════════════════
 
-        private const string BUTTON_ID_SPELL_MENU = "MobileUISupport.Magic.SpellMenu";
+        private const string ButtonIDSpellMenu = "MobileUISupport.Magic.SpellMenu";
+        private const string SpellMenuIcon = "assets/SpellMenuIcon.png"; // Icon 16 x 16
+        private const string SpellBookItemId = "MagicStardew.SpellBook";
 
         // ═══════════════════════════════════════════════════════
         // Properties - BaseIntegration
@@ -27,7 +29,7 @@ namespace MobileUISupport.Integrations.MagicStardew
 
         public override string ModId => "Zexu2K.MagicStardew.C";
         public override string DisplayName => "Magic Stardew";
-        public override bool IsEnabled => !Config.UseOriginalMenu;
+        public override bool IsEnabled => Config.MagicStardew.EnableSupport;
 
         // ═══════════════════════════════════════════════════════
         // Properties - Components
@@ -115,7 +117,7 @@ namespace MobileUISupport.Integrations.MagicStardew
             try
             {
                 // Coba load custom icon
-                _spellMenuIcon = Helper.ModContent.Load<Texture2D>("assets/MagicSpellMenuIcon.png");
+                _spellMenuIcon = Helper.ModContent.Load<Texture2D>(SpellMenuIcon);
                 Logger.Debug("Loaded custom spell menu icon");
             }
             catch
@@ -135,7 +137,7 @@ namespace MobileUISupport.Integrations.MagicStardew
             }
 
             // Gunakan builder untuk registrasi
-            var builder = _addonsAPI.CreateButton(BUTTON_ID_SPELL_MENU);
+            var builder = _addonsAPI.CreateButton(ButtonIDSpellMenu);
 
             if (builder == null)
             {
@@ -162,7 +164,7 @@ namespace MobileUISupport.Integrations.MagicStardew
             }
 
             // Tint color ungu untuk magic theme
-            builder.WithTintColor(new Color(138, 43, 226));
+            //builder.WithTintColor(new Color(138, 43, 226));
 
             // Register
             if (builder.Register())
@@ -191,15 +193,33 @@ namespace MobileUISupport.Integrations.MagicStardew
             if (Game1.activeClickableMenu != null)
                 return false;
 
-            // Tidak dalam event/cutscene
-            if (Game1.eventUp)
+            // Tidak dalam event/cutscene atau dialogue
+            if (Game1.eventUp || Game1.dialogueUp)
                 return false;
 
-            // Tidak dalam dialog
-            if (Game1.dialogueUp)
+            if (Config.MagicStardew.HideButton)
                 return false;
 
-            return true;
+            return HasSpellBook();
+        }
+
+        private bool HasSpellBook()
+        {
+            var player = Game1.player;
+
+            // Cek Inventory
+            foreach (var item in player.Items)
+            {
+                if (item?.ItemId == SpellBookItemId)
+                    return true;
+            }
+
+            // Cek Ring Slot
+            if (player.leftRing.Value?.ItemId == SpellBookItemId || player.rightRing.Value?.ItemId == SpellBookItemId)
+                return true;
+
+
+            return false;
         }
 
         /// <summary>
@@ -260,7 +280,7 @@ namespace MobileUISupport.Integrations.MagicStardew
         /// </summary>
         public void SetSpellMenuButtonEnabled(bool enabled)
         {
-            _addonsAPI?.SetButtonEnabled(BUTTON_ID_SPELL_MENU, enabled);
+            _addonsAPI?.SetButtonEnabled(ButtonIDSpellMenu, enabled);
         }
 
         /// <summary>
@@ -268,7 +288,7 @@ namespace MobileUISupport.Integrations.MagicStardew
         /// </summary>
         public bool IsSpellMenuButtonRegistered()
         {
-            return _addonsAPI?.IsButtonRegistered(BUTTON_ID_SPELL_MENU) ?? false;
+            return _addonsAPI?.IsButtonRegistered(ButtonIDSpellMenu) ?? false;
         }
     }
 }

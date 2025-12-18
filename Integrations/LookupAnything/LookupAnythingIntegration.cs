@@ -6,6 +6,7 @@ using MobileUISupport.Framework;
 using MobileUISupport.Integrations.AddonsAPI;
 using MobileUISupport.Integrations.Base;
 using MobileUISupport.UI;
+using MobileUISupport.Config;
 using StardewModdingAPI;
 using StardewValley;
 
@@ -30,20 +31,20 @@ namespace MobileUISupport.Integrations.LookupAnything
 
         public override string ModId => "Pathoschild.LookupAnything";
         public override string DisplayName => "Lookup Anything";
-        public override bool IsEnabled => Config.EnableLookupAnythingIntegration;
+        public override bool IsEnabled => Config.LookupAnything.EnableLookupAnythingIntegration;
 
         // ═══════════════════════════════════════════════════════
         // Properties - Components
         // ═══════════════════════════════════════════════════════
 
-        public LookupAnythingAPI? API { get; private set; }
+        public LookupAnythingAPI API { get; private set; }
 
         // Reference ke AddonsAPI
-        private AddonsAPIIntegration? _addonsAPI;
+        private AddonsAPIIntegration _addonsAPI;
 
         // Textures
-        private Texture2D? _lookupIcon;
-        private Texture2D? _searchIcon;
+        private Texture2D _lookupIcon;
+        private Texture2D _searchIcon;
 
         // ═══════════════════════════════════════════════════════
         // Initialization
@@ -67,7 +68,7 @@ namespace MobileUISupport.Integrations.LookupAnything
         /// <summary>
         /// Set reference ke AddonsAPI integration.
         /// </summary>
-        public void SetAddonsAPI(AddonsAPIIntegration? addonsAPI)
+        public void SetAddonsAPI(AddonsAPIIntegration addonsAPI)
         {
             _addonsAPI = addonsAPI;
             Logger.Debug($"AddonsAPI reference set: {addonsAPI != null}");
@@ -339,7 +340,7 @@ namespace MobileUISupport.Integrations.LookupAnything
 
             try
             {
-                if (Config.UseMobileSearchMenu)
+                if (Config.LookupAnything.UseMobileSearchMenu)
                 {
                     OpenMobileSearchMenu();
                 }
