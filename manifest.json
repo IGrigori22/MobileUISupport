@@ -12,6 +12,10 @@
             "IsRequired": false
         },
         {
+            "UniqueID": "paulsteele.fse",
+            "IsRequired": false
+        },
+        {
             "UniqueID": "IGrigori22.AddonsMobile",
             "IsRequired": false
         },

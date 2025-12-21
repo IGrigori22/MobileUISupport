@@ -9,7 +9,7 @@ namespace MobileUISupport.Config
     internal sealed class MagicStardewConfig
     {
         // ═══════════════════════════════════════════════════════
-        // Layout Settings
+        // Layout
         // ═══════════════════════════════════════════════════════
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace MobileUISupport.Config
 
 
         // ═══════════════════════════════════════════════════════
-        // Appearance Settings
+        // Appearance
         // ═══════════════════════════════════════════════════════
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace MobileUISupport.Config
 
 
         // ═══════════════════════════════════════════════════════
-        // Behavior Settings
+        // Behavior
         // ═══════════════════════════════════════════════════════
 
         /// <summary>
@@ -109,14 +109,14 @@ namespace MobileUISupport.Config
         public bool EnableSounds { get; set; } = true;               
 
         // ═══════════════════════════════════════════════════════
-        //  Advance Settings
+        //  General Settings
         // ═══════════════════════════════════════════════════════
 
-        public bool HideButton {  get; set; } = false;
+        public bool ForcedVisibleButton {  get; set; } = false;
         
         /// <summary>
-        /// Gunakan menu asli Magic Stardew (nonaktifkan replacement)
+        /// Gunakan menu asli Magic Stardew (nonaktifkan replacemsent)
         /// </summary>
-        public bool EnableSupport { get; set; } = true;
+        public bool OriginalSpellMenu { get; set; } = false;
     }
 }

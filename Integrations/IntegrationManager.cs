@@ -5,6 +5,7 @@ using MobileUISupport.Integrations.GMCM;
 using MobileUISupport.Integrations.LookupAnything;
 using MobileUISupport.Integrations.MagicStardew;
 using MobileUISupport.Integrations.StardewSquad;
+using System.Linq.Expressions;
 
 namespace MobileUISupport.Integrations
 {
@@ -27,7 +28,7 @@ namespace MobileUISupport.Integrations
         public AddonsAPIIntegration? AddonsAPI { get; private set; }
         public MagicStardewIntegration? Magic { get; private set; }
         public StardewSquadIntegration? Squad { get; private set; }
-        public LookupAnythingIntegration Lookup {  get; private set; }
+        public LookupAnythingIntegration? Lookup {  get; private set; }
        
 
         // ═══════════════════════════════════════════════════════

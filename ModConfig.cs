@@ -24,6 +24,7 @@ namespace MobileUISupport
         /// </summary>
         internal AdvanceConfig Advance { get; set; } = new();
 
+
         /// <summary>
         /// Mode debug - tampilkan info debug dan hitbox
         /// </summary>

@@ -19,7 +19,7 @@ namespace MobileUISupport.Integrations.GMCM
         // Fields
         // ═══════════════════════════════════════════════════════
 
-        private IGenericModConfigMenuApi _api;
+        private IGenericModConfigMenuApi? _api;
         private readonly List<IGMCMPageBuilder> _pageBuilders = new();
 
         // ═══════════════════════════════════════════════════════
@@ -114,7 +114,7 @@ namespace MobileUISupport.Integrations.GMCM
         private void BuildMainPage()
         {
 
-            _api.AddBoolOption(
+            _api?.AddBoolOption(
                 mod: Manifest,
                 getValue: () => Config.DebugMode,
                 setValue: v => Config.DebugMode = v,
@@ -175,7 +175,8 @@ namespace MobileUISupport.Integrations.GMCM
             target.StardewSquad.ShowButtonOnlyWhenNearNPC = source.StardewSquad.ShowNoNPCNearbyMessage;
 
             // Magic settings
-            target.MagicStardew.EnableSupport = source.MagicStardew.EnableSupport;
+            target.MagicStardew.OriginalSpellMenu = source.MagicStardew.OriginalSpellMenu;
+            target.MagicStardew.ForcedVisibleButton = source.MagicStardew.ForcedVisibleButton;
             target.MagicStardew.SpellIconSize = source.MagicStardew.SpellIconSize;
             target.MagicStardew.GridColumns = source.MagicStardew.GridColumns;
             target.MagicStardew.GridRows = source.MagicStardew.GridRows;

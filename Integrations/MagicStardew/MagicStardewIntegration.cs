@@ -29,7 +29,7 @@ namespace MobileUISupport.Integrations.MagicStardew
 
         public override string ModId => "Zexu2K.MagicStardew.C";
         public override string DisplayName => "Magic Stardew";
-        public override bool IsEnabled => Config.MagicStardew.EnableSupport;
+        public override bool IsEnabled => !Config.MagicStardew.OriginalSpellMenu;
 
         // ═══════════════════════════════════════════════════════
         // Properties - Components
@@ -197,13 +197,17 @@ namespace MobileUISupport.Integrations.MagicStardew
             if (Game1.eventUp || Game1.dialogueUp)
                 return false;
 
-            if (Config.MagicStardew.HideButton)
-                return false;
+            if (Config.MagicStardew.ForcedVisibleButton)
+                return true;
 
             return HasSpellBook();
         }
 
-        private bool HasSpellBook()
+        /// <summary>
+        /// Check SpellBook in Inventory and Accessories slot
+        /// </summary>
+        /// <returns></returns>
+        private static bool HasSpellBook()
         {
             var player = Game1.player;
 

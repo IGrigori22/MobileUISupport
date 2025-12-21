@@ -102,18 +102,18 @@ namespace MobileUISupport.Integrations.GMCM
 
             api.AddBoolOption(
                 mod: manifest,
-                getValue: () => config.MagicStardew.EnableSupport,
-                setValue: v => config.MagicStardew.EnableSupport = v,
-                name: () => "Enable Support",
+                getValue: () => config.MagicStardew.OriginalSpellMenu,
+                setValue: v => config.MagicStardew.OriginalSpellMenu = v,
+                name: () => "Use Original Spell Menu",
                 tooltip: () => "Disable mobile UI and use the original Magic Stardew menu (requires restart)"
             );
 
             api.AddBoolOption(
                 mod: manifest,
-                getValue: () => config.MagicStardew.HideButton,
-                setValue: v => config.MagicStardew.HideButton = v,
-                name: () => "Hide Button",
-                tooltip: () => "Hide Button on Addons Menu Bar"
+                getValue: () => config.MagicStardew.ForcedVisibleButton,
+                setValue: v => config.MagicStardew.ForcedVisibleButton = v,
+                name: () => "Forced Button",
+                tooltip: () => "Force button to appear"
             );
 
             api.AddTextOption(

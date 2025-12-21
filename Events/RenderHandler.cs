@@ -1,4 +1,5 @@
 ﻿using MobileUISupport.Integrations;
+using MobileUISupport.Patches;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
@@ -41,7 +42,6 @@ namespace MobileUISupport.Events
             // Update Squad button
             _integrations.Squad?.Update(e.Ticks);
 
-            // Add more update handlers here
         }
 
         private void OnRenderedHud(object? sender, RenderedHudEventArgs e)

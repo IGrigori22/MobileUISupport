@@ -21,18 +21,18 @@ namespace MobileUISupport.Integrations.LookupAnything
         private readonly IModHelper _helper;
 
         // Cached mod entry
-        private object _modEntry;
-        private Type _modEntryType;
+        private object? _modEntry;
+        private Type? _modEntryType;
 
         // Cached MethodInfo
-        private MethodInfo _showLookupMethod;
-        private MethodInfo _hideLookupMethod;
-        private MethodInfo _tryToggleSearchMethod;
-        private MethodInfo _showLookupForMethod;
+        private MethodInfo? _showLookupMethod;
+        private MethodInfo? _hideLookupMethod;
+        private MethodInfo? _tryToggleSearchMethod;
+        private MethodInfo? _showLookupForMethod;
 
         // Cached FieldInfo untuk TargetFactory
-        private FieldInfo _targetFactoryField;
-        private MethodInfo _getSearchSubjectsMethod;
+        private FieldInfo? _targetFactoryField;
+        private MethodInfo? _getSearchSubjectsMethod;
 
         // ═══════════════════════════════════════════════════════
         // Properties
@@ -93,7 +93,7 @@ namespace MobileUISupport.Integrations.LookupAnything
             }
         }
 
-        private object GetModEntry()
+        private object? GetModEntry()
         {
             var modInfo = _helper.ModRegistry.Get("Pathoschild.LookupAnything");
             if (modInfo == null)
@@ -350,7 +350,7 @@ namespace MobileUISupport.Integrations.LookupAnything
         /// Dapatkan semua searchable subjects dari TargetFactory.
         /// Return type asli: IEnumerable&lt;ISubject&gt;
         /// </summary>
-        public IEnumerable<object> GetSearchSubjects()
+        public IEnumerable<object>? GetSearchSubjects()
         {
             if (_targetFactoryField == null)
             {
