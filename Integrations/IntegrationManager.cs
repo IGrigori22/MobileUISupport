@@ -4,6 +4,7 @@ using MobileUISupport.Integrations.Base;
 using MobileUISupport.Integrations.GMCM;
 using MobileUISupport.Integrations.LookupAnything;
 using MobileUISupport.Integrations.MagicStardew;
+using MobileUISupport.Integrations.MHEventsList;
 using MobileUISupport.Integrations.StardewSquad;
 using System.Linq.Expressions;
 
@@ -29,6 +30,7 @@ namespace MobileUISupport.Integrations
         public MagicStardewIntegration? Magic { get; private set; }
         public StardewSquadIntegration? Squad { get; private set; }
         public LookupAnythingIntegration? Lookup {  get; private set; }
+        public MHEventsListIntegration? MHEvents { get; private set; }
        
 
         // ═══════════════════════════════════════════════════════
@@ -72,6 +74,9 @@ namespace MobileUISupport.Integrations
             Lookup = new LookupAnythingIntegration();
             RegisterIntegration(Lookup);
 
+            MHEvents = new MHEventsListIntegration();
+            RegisterIntegration(MHEvents);
+
             // ─────────────────────────────────────────────────────
             // Phase 3: Initialize all (kecuali yang sudah di-init)
             // ─────────────────────────────────────────────────────
@@ -105,6 +110,7 @@ namespace MobileUISupport.Integrations
                 Magic?.SetAddonsAPI(AddonsAPI);
                 Squad?.SetAddonsAPI(AddonsAPI);
                 Lookup?.SetAddonsAPI(AddonsAPI);
+                MHEvents?.SetAddonsAPI(AddonsAPI);
 
 
                 Logger.Debug("Wired AddonsAPI dependencies");

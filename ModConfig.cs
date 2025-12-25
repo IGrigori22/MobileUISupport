@@ -4,6 +4,7 @@ namespace MobileUISupport
 {
     public sealed class ModConfig
     {
+        internal MHEventsListConfig MHEventsList { get; set; } = new();
         /// <summary>
         /// Lookup Anything integration settings.
         /// </summary>

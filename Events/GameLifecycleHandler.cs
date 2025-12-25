@@ -75,6 +75,7 @@ namespace MobileUISupport.Events
 
             Logger.Debug($"Squad Available: {_integrations.Squad?.IsAvailable ?? false}");
             Logger.Debug($"Magic Available: {_integrations.Magic?.IsAvailable ?? false}");
+            Logger.Debug($"MHEvents Available: {_integrations.MHEvents?.IsAvailable ?? false}");
         }
     }
 }
