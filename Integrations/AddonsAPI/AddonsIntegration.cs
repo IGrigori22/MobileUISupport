@@ -56,7 +56,7 @@ namespace MobileUISupport.Integrations.AddonsAPI
                 return false;
             }
 
-            Logger.Info($"AddonsMobile API v{API.Version} connected");
+            Logger.Info($"AddonsMobile API v{API.ApiVersion} connected");
             Logger.Debug($"Is Mobile Platform: {API.IsMobilePlatform}");
 
             return true;
@@ -78,13 +78,8 @@ namespace MobileUISupport.Integrations.AddonsAPI
         public bool RegisterButton(
             string uniqueId,
             string displayName,
-            string description,
-            KeyCategory category,
             Action onPressed,
-            Texture2D? icon = null,
-            Rectangle? iconSourceRect = null,
-            int priority = 0,
-            string? originalKeybind = null)
+            KeyCategory category = KeyCategory.Miscellaneous)
         {
             if (API == null)
             {
@@ -94,18 +89,15 @@ namespace MobileUISupport.Integrations.AddonsAPI
 
             try
             {
-                bool success = API.RegisterButton(
+                // ← GANTI ke RegisterSimpleButton
+                bool success = API.RegisterSimpleButton(
                     uniqueId: uniqueId,
                     modId: MyModId,
                     displayName: displayName,
-                    description: description,
-                    category: category,
-                    onPressed: onPressed,
-                    iconTexture: icon!,
-                    iconSourceRect: iconSourceRect,
-                    priority: priority,
-                    originalKeybind: originalKeybind!
+                    onPress: onPressed,
+                    category: category
                 );
+
 
                 if (success)
                 {
@@ -176,10 +168,8 @@ namespace MobileUISupport.Integrations.AddonsAPI
             if (API == null)
                 return;
 
-            // Gunakan method bawaan API
-            API.UnregisterAllFromMod(MyModId);
-
-            int count = _registeredButtonIds.Count;
+            // ← Sekarang return int
+            int count = API.UnregisterAllFromMod(MyModId);
             _registeredButtonIds.Clear();
 
             if (count > 0)
@@ -290,7 +280,7 @@ namespace MobileUISupport.Integrations.AddonsAPI
 
         public ButtonBuilderWrapper WithTintColor(Color color)
         {
-            _builder.WithTintColor(color);
+            _builder.WithTint(color);
             return this;
         }
 
@@ -314,19 +304,19 @@ namespace MobileUISupport.Integrations.AddonsAPI
 
         public ButtonBuilderWrapper WithOriginalKeybind(string keybind)
         {
-            _builder.WithOriginalKeybind(keybind);
+            _builder.WithKeybind(keybind);
             return this;
         }
 
         public ButtonBuilderWrapper OnPressed(Action action)
         {
-            _builder.OnPressed(action);
+            _builder.OnPress(action);
             return this;
         }
 
-        public ButtonBuilderWrapper OnHeld(Action action)
+        public ButtonBuilderWrapper OnHeld(Action<float> action)
         {
-            _builder.OnHeld(action);
+            _builder.OnHold(action);
             return this;
         }
 

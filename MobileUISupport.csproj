@@ -15,9 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="MHEventsList">
-      <HintPath>C:\Users\ASUS\Downloads\Stardew.Valley.Gamdie.com\Stardew Valley\Mods\MH Event List\MHEventsList.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>
